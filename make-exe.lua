@@ -1,7 +1,10 @@
 
 
 print("main download link")
-
+local function reslash(st)
+	local v1 = st:gsub("\\","/")
+	return v1
+end
 
 
 local mainlink = io.read():gsub('"',"")
@@ -10,10 +13,10 @@ local versionlink = io.read():gsub('"',"")
 print("package name (MyProgram.exe)")
 local packagename = io.read():gsub('"',"")
 print("install folder (inside roaming folder)")
-local parentfolder = io.read():gsub('"',"")
+local parentfolder = reslash(io.read():gsub('"',""))
 
 print("output folder (where your package will be created)")
-local outputfolder = io.read():gsub('"',"")
+local outputfolder = reslash(io.read():gsub('"',""))
 
 outputfolder = outputfolder.."/"..packagename.."_universal"
 os.execute([[mkdir "]]..outputfolder..[["]])
@@ -30,9 +33,10 @@ end
 
 
 local installcode = [[
+
 mkdir "%AppData%\]]..parentfolder..[["
-robocopy /E %~dp0 "%AppData%\]]..parentfolder..[["
-"%AppData%\]]..parentfolder..[[\run_exe.bat"
+cd %~dp0
+lua.exe downloader.lua
 
 ]]
 local makepackage = [[
@@ -47,9 +51,14 @@ end
 local function title(st)
 	os.execute("title "..st)
 end
+local appdataf = io.popen("echo %AppData%")
+local roaming = appdataf:read("*all"):gsub("\n","")
+appdataf:close()
+local parentfolder = "]]..parentfolder..[["
+local applocation = roaming.."/"..parentfolder
 title("]]..packagename..[[ updater")
 os.execute(]].."[["..[[curl -o "versioncheck.txt" -L "]]..versionlink..[["]].."]]"..[[)
-local thisversion = io.open("version.txt","r")
+local thisversion = io.open(applocation.."/version.txt","r")
 local nvtext = ""
 local vtext = ""
 local update = false
@@ -57,16 +66,15 @@ if thisversion then
 	local newversion = io.open("versioncheck.txt","r")
 	vtext = thisversion:read("*all")
 	nvtext = newversion:read("*all")
-	if vtext ~= nvtext then
-		update = true
-		os.remove("version.txt")
-		os.rename("versioncheck.txt","version.txt")
-	end
 	thisversion:close()
 	newversion:close()
-	os.remove("versioncheck.txt")
+	if vtext ~= nvtext then
+		update = true
+		os.remove(applocation.."/version.txt")
+		os.rename("versioncheck.txt",applocation.."/version.txt")
+	end
 else
-	os.rename("versioncheck.txt","version.txt")
+	os.rename("versioncheck.txt",applocation.."/version.txt")
 	update = true
 end
 
@@ -79,6 +87,7 @@ if update then
 		cls()
 		print("Updating to version: "..nvtext)
 		os.execute(]].."[["..[[curl -o "]]..packagename..[[" -L "]]..mainlink..[["]].."]]"..[[)
+		os.execute(]].."[["..[[copy "]]..packagename..[[" "]].."]]"..[[..applocation..]].."[["..[[/]]..packagename..[["]].."]]"..[[)
 	end
 	
 end
@@ -122,14 +131,12 @@ UserQuietInstCmd=
 FILE0="installer.bat"
 FILE1="downloader.lua"
 FILE2="lua.exe"
-FILE3="run_exe.bat"
 [SourceFiles]
 SourceFiles0=]]..outputfolder..[[\
 [SourceFiles0]
 %FILE0%=
 %FILE1%=
 %FILE2%=
-%FILE3%=
 ]]
 
 savefile("downloader.lua",updatecode)
@@ -138,5 +145,5 @@ savefile("makepackage.bat",makepackage)
 os.execute([[copy "lua.exe" "]]..outputfolder..[[\lua.exe"]])
 os.execute([[copy "run_exe.bat" "]]..outputfolder..[[\run_exe.bat"]])
 savefile("iexpressinfo.sed",sedfile)
-os.execute([[start "]]..outputfolder.."\\makepackage.bat"..[["]])
+os.execute([[call "]]..outputfolder.."/makepackage.bat"..[["]])
 

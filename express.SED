@@ -34,8 +34,7 @@ FILE0="LICENSE"
 FILE1="lua.exe"
 FILE2="make-exe.lua"
 FILE3="README.md"
-FILE4="run_exe.bat"
-FILE5="version.txt"
+FILE4="version.txt"
 [SourceFiles]
 SourceFiles0=L:\MyGitHub\universal-github-exe\
 [SourceFiles0]
@@ -44,4 +43,3 @@ SourceFiles0=L:\MyGitHub\universal-github-exe\
 %FILE2%=
 %FILE3%=
 %FILE4%=
-%FILE5%=
