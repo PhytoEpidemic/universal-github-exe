@@ -36,7 +36,7 @@ robocopy /E %~dp0 "%AppData%\]]..parentfolder..[["
 
 ]]
 local makepackage = [[
-cd %~dp0
+pushd "%~dp0"
 iexpress /N iexpressinfo.sed
 ]]
 
@@ -138,5 +138,5 @@ savefile("makepackage.bat",makepackage)
 os.execute([[copy "lua.exe" "]]..outputfolder..[[\lua.exe"]])
 os.execute([[copy "run_exe.bat" "]]..outputfolder..[[\run_exe.bat"]])
 savefile("iexpressinfo.sed",sedfile)
-os.execute([["]]..outputfolder.."\\makepackage.bat"..[["]])
+os.execute([[start "]]..outputfolder.."\\makepackage.bat"..[["]])
 
