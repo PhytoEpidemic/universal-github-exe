@@ -1,13 +1,16 @@
 
 
-print("main download link")
+
 local function reslash(st)
 	local v1 = st:gsub("\\","/")
 	return v1
 end
 
+--print("main download link")
 
-local mainlink = io.read():gsub('"',"")
+--local mainlink = io.read():gsub('"',"")
+print("Repository link")
+local repolink = io.read():gsub('"',"")
 print("version file link")
 local versionlink = io.read():gsub('"',"")
 print("package name (MyProgram.exe)")
@@ -27,8 +30,9 @@ function savefile(file,text)
 	thefile:close()
 end
 
-
-
+local gitHub = [[https://github.com/]]
+PhytoEpidemic/universal-github-exe
+"https://github.com/PhytoEpidemic/universal-github-exe/releases/download/Official/universal-github-exe.exe"
 
 
 
@@ -48,6 +52,9 @@ local updatecode = [[
 local function cls()
 	os.execute("cls")
 end
+local function pause()
+	os.execute("pause")
+end
 local function title(st)
 	os.execute("title "..st)
 end
@@ -55,6 +62,7 @@ local appdataf = io.popen("echo %AppData%")
 local roaming = appdataf:read("*all"):gsub("\n","")
 appdataf:close()
 local parentfolder = "]]..parentfolder..[["
+local packagename = "]]..packagename..[["
 local applocation = roaming.."/"..parentfolder
 title("]]..packagename..[[ updater")
 os.execute(]].."[["..[[curl -o "versioncheck.txt" -L "]]..versionlink..[["]].."]]"..[[)
@@ -62,33 +70,54 @@ local thisversion = io.open(applocation.."/version.txt","r")
 local nvtext = ""
 local vtext = ""
 local update = false
+local newversion = io.open("versioncheck.txt","r")
 if thisversion then
-	local newversion = io.open("versioncheck.txt","r")
 	vtext = thisversion:read("*all")
-	nvtext = newversion:read("*all")
 	thisversion:close()
+end
+local noconnection = false
+if newversion then
+	nvtext = newversion:read("*all")
 	newversion:close()
-	if vtext ~= nvtext then
+else
+	noconnection = true
+end
+
+if thisversion then
+	if vtext ~= nvtext or vtext == "" then
 		update = true
-		os.remove(applocation.."/version.txt")
-		os.rename("versioncheck.txt",applocation.."/version.txt")
 	end
 else
-	os.rename("versioncheck.txt",applocation.."/version.txt")
 	update = true
 end
 
 if update then
 	os.execute(]].."[["..[[powershell -window normal -command ""]].."]]"..[[)
 	cls()
-	print("Out of date version: "..vtext)
-	print("Would you like to update to version: "..nvtext.."?")
-	if vtext == "" or io.read() == "y" then
-		cls()
-		print("Updating to version: "..nvtext)
-		os.execute(]].."[["..[[curl -o "]]..packagename..[[" -L "]]..mainlink..[["]].."]]"..[[)
-		os.execute(]].."[["..[[copy "]]..packagename..[[" "]].."]]"..[[..applocation..]].."[["..[[/]]..packagename..[["]].."]]"..[[)
+	if noconnection then
+		print("You have no internet connection. Unable to update")
+		if vtext == "" then
+			print("No version currently installed. Pleases restore connection before trying again.")
+			pause()
+			os.exit()
+		else
+			print("Version "..vtext.." currently installed.")
+		end
+		pause()
+	else
+		print("Out of date version: "..vtext)
+		print("Would you like to update to version: "..nvtext.."?")
+		if vtext == "" or io.read() == "y" then
+			cls()
+			print("Updating to version: "..nvtext)
+			os.execute(]].."[["..[[curl -o "]]..packagename..[[" -L "]]..repolink..[[/releases/download/]].."]]..vtext..[["..[[/]]..packagename..[["]].."]]"..[[)
+			os.execute(]].."[["..[[copy "]]..packagename..[[" "]].."]]"..[[..applocation..]].."[["..[[/]]..packagename..[["]].."]]"..[[)
+			os.remove(applocation.."/version.txt")
+			
+			os.rename("versioncheck.txt",applocation.."/version.txt")
+		end
 	end
+	
 	
 end
 
