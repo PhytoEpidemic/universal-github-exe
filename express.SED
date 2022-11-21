@@ -26,15 +26,16 @@ DisplayLicense=
 FinishMessage=
 TargetName=L:\MyGitHub\releases\universal-github-exe\Official\universal-github-exe.exe
 FriendlyName=t
-AppLaunched=lua.exe make-exe.lua
+AppLaunched=universal-github-exe.exe main.lua
 PostInstallCmd=<None>
 AdminQuietInstCmd=
 UserQuietInstCmd=
 FILE0="LICENSE"
-FILE1="lua.exe"
-FILE2="make-exe.lua"
+FILE1="universal-github-exe.exe"
+FILE2="main.lua"
 FILE3="README.md"
 FILE4="version.txt"
+FILE5="downloader.lua"
 [SourceFiles]
 SourceFiles0=L:\MyGitHub\universal-github-exe\
 [SourceFiles0]
@@ -43,3 +44,4 @@ SourceFiles0=L:\MyGitHub\universal-github-exe\
 %FILE2%=
 %FILE3%=
 %FILE4%=
+%FILE5%=
