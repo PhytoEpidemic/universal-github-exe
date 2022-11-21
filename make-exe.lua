@@ -30,10 +30,6 @@ function savefile(file,text)
 	thefile:close()
 end
 
-local gitHub = [[https://github.com/]]
-PhytoEpidemic/universal-github-exe
-"https://github.com/PhytoEpidemic/universal-github-exe/releases/download/Official/universal-github-exe.exe"
-
 
 
 local installcode = [[
@@ -110,7 +106,7 @@ if update then
 		if vtext == "" or io.read() == "y" then
 			cls()
 			print("Updating to version: "..nvtext)
-			os.execute(]].."[["..[[curl -o "]]..packagename..[[" -L "]]..repolink..[[/releases/download/]].."]]..vtext..[["..[[/]]..packagename..[["]].."]]"..[[)
+			os.execute(]].."[["..[[curl -o "]]..packagename..[[" -L "]]..repolink..[[/releases/download/]].."]]..nvtext..[["..[[/]]..packagename..[["]].."]]"..[[)
 			os.execute(]].."[["..[[copy "]]..packagename..[[" "]].."]]"..[[..applocation..]].."[["..[[/]]..packagename..[["]].."]]"..[[)
 			os.remove(applocation.."/version.txt")
 			
