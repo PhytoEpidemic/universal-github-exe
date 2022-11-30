@@ -68,7 +68,7 @@ function askBox(title,text,buttons,typ)
 powershell -Command "& {Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show(']]..text..[[', ']]..title..[[', ']]..buttons..[[', [System.Windows.Forms.MessageBoxIcon]::]]..typ..[[);}" > %TEMP%\out.tmp
 set /p OUT=<%TEMP%\out.tmp
 echo %OUT%
-]])
+]])--batch code from https://gist.github.com/shalithasuranga/aa5fc661dda192015cfeb26d02807cf6/
 	bfile:close()
 	local tf = io.popen([[askBox.bat]])
 	local answer = tf:read("*l")
