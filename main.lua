@@ -15,33 +15,60 @@ function runcode()
 		return v1
 	end
 	
-	local inputparams = {
-		[1] = {
-			name = "Repository link",
-			varname = "repository_link",
-		},
-		[2] = {
-			name = "package name on github (MyProgram.exe)",
-			varname = "package_name",
-		},
-		[3] = {
-			name = "install folder (inside roaming folder)",
-			varname = "parent_install_folder",
-		},
-		[4] = {
-			name = "version file link",
-			varname = "version_file_link",
-		},
-		[5] = {
-			name = "Add taskkill command during update ('y' for your package name, or type a custom command)(leave blank to skip)",
-			varname = "add_taskkill_command",
-		},
+	local inputparams = {}
+	local function addparam(param)
+		table.insert(inputparams, param)
+	end
 	
-	}
+	addparam({
+		name = "Is this for a release on a GitHub repository? [y/n]",
+		varname = "is_github_release",
+		valid = {"y","n"},
+	})
+	addparam({
+		name = "Repository link",
+		varname = "repository_link",
+		prereq = {"is_github_release","y"}
+	})
+	addparam({
+		name = "File download link.",
+		varname = "file_download_link",
+		prereq = {"is_github_release","n"}
+	})
+	addparam({
+		name = "version file link",
+		varname = "version_file_link",
+	})
+	addparam({
+		name = "package name on github (MyProgram.exe)",
+		varname = "package_name",
+		prereq = {"is_github_release","y"},
+	})
+	addparam({
+		name = "package name (MyProgram.exe)",
+		varname = "package_name",
+		prereq = {"is_github_release","n"},
+	})
+	addparam({
+		name = "install folder (inside roaming folder)",
+		varname = "parent_install_folder",
+	})
+	
+	addparam({
+		name = "Add taskkill command during update ('y' for your package name, or type a custom command)(leave blank to skip)",
+		varname = "add_taskkill_command",
+	})
+	addparam({
+		name = "Would you like to make this executable force update when launched? [y/n](The user can turn this on if they want but they cannot turn it off if this is enabled)",
+		varname = "always_force_update",
+		valid = {"y","n"},
+	})
+	
+	
 	
 	local function getinputp(varname)
 		for _,p in pairs(inputparams) do
-			if p.varname == varname then
+			if p.input and p.varname == varname then
 				return p.input
 			end
 		end
@@ -50,8 +77,35 @@ function runcode()
 	
 	
 	for i,p in ipairs(inputparams) do
-		print(p.name)
-		inputparams[i].input = io.read():gsub('"',"")
+		while true do
+			if p.prereq and getinputp(p.prereq[1]) ~= p.prereq[2] then
+				break
+			end
+			print(p.name)
+			local userinput = io.read():gsub('"',"")
+			local validinput = false
+			if p.valid then
+				for _,vi in pairs(p.valid) do
+					if vi == userinput then
+						validinput = true
+						break
+					end
+				end
+			else
+				validinput = true
+			end
+			if validinput then
+				inputparams[i].input = userinput
+				break
+			else
+				print("Invalid input")
+				print("try:")
+				for _,vi in pairs(p.valid) do
+					print(vi)
+				end
+			end
+			
+		end
 	end
 	
 	--print("main download link")
@@ -128,10 +182,14 @@ function runcode()
 	end
 	local updatecode = loadtext("downloader.lua")
 	for i,p in ipairs(inputparams) do
-		updatecode = updatecode:gsub(p.varname,p.input)
+		if p.input then
+			updatecode = updatecode:gsub(p.varname,p.input)
+		end
 	end
 	for i,p in ipairs(inputparams) do
-		sedfile = sedfile:gsub(p.varname,p.input)
+		if p.input then
+			sedfile = sedfile:gsub(p.varname,p.input)
+		end
 	end
 	savefile("downloader.lua",updatecode)
 	savefile("makepackage.bat",makepackage)

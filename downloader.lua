@@ -19,9 +19,12 @@ local appdataf = io.popen("echo %AppData%")
 local roaming = appdataf:read("*all"):gsub("\n","")
 appdataf:close()
 local parentfolder = "parent_install_folder"
+local UseGitHub = "is_github_release"
+local nonGitHubLink = "file_download_link"
 local repolink = "repository_link"
 local packagename = "package_name"
 local taskkillcom = "add_taskkill_command"
+local alwaysforceupdate = "always_force_update"
 local applocation = roaming.."/"..parentfolder
 title(packagename.." updater")
 local function checkVersion()
@@ -122,12 +125,18 @@ local function updateprogram(forceupdate)
 			showwindow()
 			cls()
 			print("Updating to version: "..nvtext)
-			os.execute([[curl -o "]]..packagename..[[.tmp" -L "]]..repolink..[[/releases/download/]]..nvtext..[[/]]..packagename..[["]])
+			if UseGitHub == "y" then
+				os.execute([[curl -o "]]..packagename..[[.tmp" -L "]]..repolink..[[/releases/download/]]..nvtext..[[/]]..packagename..[["]])
+			else
+				os.execute([[curl -o "]]..packagename..[[.tmp" -L "]]..nonGitHubLink..[["]])
+			end
+			
+			
 			os.execute([[mkdir "]]..applocation..[["]])
 			if taskkillcom ~= "" then
 				if taskkillcom == "y" then
 					os.execute([[taskkill /IM "]]..packagename..[["]])
-					os.execute([[taskkill /IM /F "]]..packagename..[["]])
+					os.execute([[taskkill /F /IM "]]..packagename..[["]])
 				else
 					os.execute(taskkillcom)
 				end
@@ -158,7 +167,7 @@ local function updateloop(forceupdate)
 end
 local _, needsupdate = checkVersion()
 if needsupdate then
-	updateloop()
+	updateloop(alwaysforceupdate == "y")
 elseif not runprogram() then
 	if askBox(packagename.." updater","Program was unable to open properly. Would you like to try updating to repair it?","YesNo","Warning") == "Yes" then
 		updateloop(true)
