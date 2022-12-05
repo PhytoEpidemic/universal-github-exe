@@ -36,6 +36,7 @@ FILE2="main.lua"
 FILE3="README.md"
 FILE4="version.txt"
 FILE5="downloader.lua"
+FILE6="lua5.1.dll"
 [SourceFiles]
 SourceFiles0=L:\MyGitHub\universal-github-exe\
 [SourceFiles0]
@@ -45,3 +46,4 @@ SourceFiles0=L:\MyGitHub\universal-github-exe\
 %FILE3%=
 %FILE4%=
 %FILE5%=
+%FILE6%=

@@ -167,11 +167,13 @@ function runcode()
 	UserQuietInstCmd=
 	FILE0="universal-github-exe.exe"
 	FILE1="downloader.lua"
+	FILE2="lua5.1.dll"
 	[SourceFiles]
 	SourceFiles0=]]..outputfolder..[[\
 	[SourceFiles0]
 	%FILE0%=
 	%FILE1%=
+	%FILE2%=
 	]]
 	
 	local function loadtext(str)
@@ -194,6 +196,7 @@ function runcode()
 	savefile("downloader.lua",updatecode)
 	savefile("makepackage.bat",makepackage)
 	os.execute([[copy "universal-github-exe.exe" "]]..outputfolder..[[\universal-github-exe.exe"]])
+	os.execute([[copy "lua5.1.dll" "]]..outputfolder..[[\lua5.1.dll"]])
 	savefile("express.SED",sedfile)
 	os.execute([[call "]]..outputfolder.."/makepackage.bat"..[["]])
 
