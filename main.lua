@@ -5,6 +5,11 @@ end
 local function title(st)
 	os.execute("title "..st)
 end
+local function cls()
+	os.execute("cls")
+end
+
+
 title("universal-github-exe.exe package maker")
 function runcode()
 	
@@ -24,6 +29,7 @@ function runcode()
 		name = "Is this for a release on a GitHub repository? [y/n]",
 		varname = "is_github_release",
 		valid = {"y","n"},
+		hide = true,
 	})
 	addparam({
 		name = "Repository link",
@@ -74,9 +80,20 @@ function runcode()
 		end
 	end
 	
+	local function printparams()
+		for _,p in pairs(inputparams) do
+			if p.input and not p.hide then
+				print(p.varname.." = "..p.input)
+				print("")
+			end
+		end
+	end
+	
 	
 	
 	for i,p in ipairs(inputparams) do
+		cls()
+		printparams()
 		while true do
 			if p.prereq and getinputp(p.prereq[1]) ~= p.prereq[2] then
 				break

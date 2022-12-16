@@ -15,6 +15,24 @@ end
 local function title(st)
 	os.execute("title "..st)
 end
+
+local function slashback(st)
+	return st:gsub("/","\\")
+end
+
+function copyFileCMD(f1,f2)
+	local res = io.popen([[copy "]]..slashback(f1)..[[" "]]..slashback(f2)..[["]], "r")
+	local data = res:read("*all")
+	local errormessage = data:find("\n.+\n")
+	res:close()
+	if not errormessage then
+		return true
+	else
+		return false
+	end
+end
+
+
 local appdataf = io.popen("echo %AppData%")
 local roaming = appdataf:read("*all"):gsub("\n","")
 appdataf:close()
@@ -86,13 +104,16 @@ echo %OUT%
 end
 
 local function runprogram()
-	local check = io.popen([[start %AppData%\"]]..parentfolder.."\\"..packagename..[[" 2>&1]])
+	local check = io.popen([[start "%AppData%\]]..parentfolder.."\\"..packagename..[[" 2>&1]])
 	local info = check:read("*all")
 	check:close()
 	return not (#info > 3)
 end
 
-
+local function updateVersionFile()
+	os.remove(applocation.."/version.txt")
+	os.rename("versioncheck.txt",applocation.."/version.txt")
+end
 
 local function updateprogram(forceupdate)
 	local hasconnection, needsupdate, vtext, nvtext = checkVersion()
@@ -141,11 +162,10 @@ local function updateprogram(forceupdate)
 					os.execute(taskkillcom)
 				end
 			end
-			os.execute([[copy "]]..packagename..[[.tmp" "]]..applocation..[[/]]..packagename..[["]])
-			os.remove(applocation.."/version.txt")
+			local copysucess = copyFileCMD(packagename..[[.tmp]], applocation..[[/]]..packagename)
 			
-			os.rename("versioncheck.txt",applocation.."/version.txt")
 			hidewindow()
+			return copysucess
 		end
 	end
 	
@@ -153,8 +173,8 @@ end
 
 local function updateloop(forceupdate)
 	while true do
-		updateprogram(forceupdate)
-		if runprogram() then
+		if updateprogram(forceupdate) and runprogram() then
+			updateVersionFile()
 			return true
 		else
 			if askBox(packagename.." updater","Program was unable to open. Would you like to try updating again?","YesNo","Warning") == "Yes" then
