@@ -104,7 +104,7 @@ echo %OUT%
 end
 
 local function runprogram()
-	local check = io.popen([[start "%AppData%\]]..parentfolder.."\\"..packagename..[[" 2>&1]])
+	local check = io.popen([["%AppData%\]]..parentfolder.."\\"..packagename..[[" 2>&1]])
 	local info = check:read("*all")
 	check:close()
 	return not (#info > 3)
