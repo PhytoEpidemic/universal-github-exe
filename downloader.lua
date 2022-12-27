@@ -104,15 +104,19 @@ echo %OUT%
 end
 
 local function runprogram()
-	local check = io.popen([["%AppData%\]]..parentfolder.."\\"..packagename..[[" 2>&1]])
+	local check = io.popen([[""%AppData%\]]..parentfolder.."\\"..packagename..[["" 2>&1]])
 	local info = check:read("*all")
 	check:close()
 	return not (#info > 3)
 end
 
 local function updateVersionFile()
-	os.remove(applocation.."/version.txt")
+	os.rename(applocation.."/version.txt","version.txt")
 	os.rename("versioncheck.txt",applocation.."/version.txt")
+end
+local function regressVersionFile()
+	os.remove(applocation.."/version.txt")
+	os.rename("version.txt",applocation.."/version.txt")
 end
 
 local function updateprogram(forceupdate)
@@ -173,15 +177,19 @@ end
 
 local function updateloop(forceupdate)
 	while true do
-		if updateprogram(forceupdate) and runprogram() then
+		if updateprogram(forceupdate) then
 			updateVersionFile()
-			return true
-		else
-			if askBox(packagename.." updater","Program was unable to open. Would you like to try updating again?","YesNo","Warning") == "Yes" then
-				forceupdate = true
+			if not runprogram() then
+				regressVersionFile()
 			else
-				return false
+				return true
 			end
+		end
+
+		if askBox(packagename.." updater","Program was unable to open. Would you like to try updating again?","YesNo","Warning") == "Yes" then
+			forceupdate = true
+		else
+			return false
 		end
 	end
 end
