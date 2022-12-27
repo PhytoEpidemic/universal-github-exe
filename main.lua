@@ -25,6 +25,9 @@ function runcode()
 		table.insert(inputparams, param)
 	end
 	
+	
+	
+	
 	addparam({
 		name = "Is this for a release on a GitHub repository? [y/n]",
 		varname = "is_github_release",
@@ -58,6 +61,7 @@ function runcode()
 	addparam({
 		name = "install folder (inside roaming folder)",
 		varname = "parent_install_folder",
+		afterf = reslash,
 	})
 	
 	addparam({
@@ -100,6 +104,9 @@ function runcode()
 			end
 			print(p.name)
 			local userinput = io.read():gsub('"',"")
+			if p.afterf then
+				userinput = p.afterf(userinput)
+			end
 			local validinput = false
 			if p.valid then
 				for _,vi in pairs(p.valid) do
