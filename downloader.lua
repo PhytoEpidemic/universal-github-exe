@@ -52,14 +52,14 @@ local function copy_file(src, dest)
 	return true
 end
 
-local roaming = os.getenv("appdata"))
-local parentfolder = "parent_install_folder"
-local UseGitHub = "is_github_release"
-local nonGitHubLink = "file_download_link"
-local repolink = "repository_link"
-local packagename = "package_name"
-local taskkillcom = "add_taskkill_command"
-local alwaysforceupdate = "always_force_update"
+local roaming = os.getenv("appdata")
+local parentfolder = [[parent_install_folder]]
+local UseGitHub = [[is_github_release]]
+local nonGitHubLink = [[file_download_link]]
+local repolink = [[repository_link]]
+local packagename = [[package_name]]
+local taskkillcom = [[add_taskkill_command]]
+local alwaysforceupdate = [[always_force_update]]
 local applocation = roaming.."/"..parentfolder
 
 title(packagename.." updater")
@@ -178,11 +178,12 @@ end
 
 local function updateprogram(forceupdate, first_run)
 	local hasconnection, needsupdate, vtext, nvtext = checkVersion(not first_run)
+	local first_update_ever = vtext == ""
 	
 	if not hasconnection then
 		askBox(packagename.." updater","You have no internet connection. Unable to update","OK","Warning")
 		
-		if vtext == "" then
+		if first_update_ever then
 			askBox(packagename.." updater","No version currently installed. Restore connection before trying again.","OK","Warning")
 			os.exit()
 		else
@@ -202,7 +203,7 @@ local function updateprogram(forceupdate, first_run)
 			dontask = dontask == "Yes"
 		end
 		
-		if forceupdate or (vtext == "") or (dontask or (askBox(packagename.." updater","Out of date version: "..vtext.." Would you like to update to version: "..nvtext.."?","YesNo","Information") == "Yes")) then
+		if forceupdate or (first_update_ever) or (dontask or (askBox(packagename.." updater","Out of date version: "..vtext.." Would you like to update to version: "..nvtext.."?","YesNo","Information") == "Yes")) then
 			if (not dontask) and (not forceupdate) and (askBox(packagename.." updater","Always ask before updating?","YesNo","Information") ~= "Yes") then
 				local askbefore = io.open(applocation..[[/dontask.txt]],"w")
 				
@@ -210,6 +211,7 @@ local function updateprogram(forceupdate, first_run)
 				askbefore:close()
 			end
 			
+			cls()
 			showwindow()
 			cls()
 			
@@ -232,7 +234,7 @@ local function updateprogram(forceupdate, first_run)
 				end
 			end
 			
-			if not os.remove(applocation..[[/]]..packagename) then
+			if (not os.remove(applocation..[[/]]..packagename)) and (not first_update_ever) then
 				hidewindow()
 				
 				return false, "remove", vtext
