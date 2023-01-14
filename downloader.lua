@@ -1,26 +1,53 @@
+local function exe(com)
+	os.execute(com)
+end
 
 local function showwindow()
-	os.execute([[powershell -window normal -command ""]])
+	exe([[powershell -window normal -command ""]])
 end
 
 local function hidewindow()
-	os.execute([[powershell -window hidden -command ""]])
+	exe([[powershell -window hidden -command ""]])
 end
 
 local function cls()
-	os.execute("cls")
+	exe("cls")
+end
+
+local function execls(com)
+	cls()
+	exe(com)
+end
+
+local function execls2(com)
+	execls(com)
+	cls()
 end
 
 local function pause()
-	os.execute("pause")
+	exe("pause")
 end
 
 local function title(st)
-	os.execute("title "..st)
+	exe("title "..st)
 end
 
 local function slashback(st)
 	return st:gsub("/","\\")
+end
+
+local function is_executable_running(executable_path)
+	local processes = {}
+	local handle = io.popen("ps -W")
+	local result = handle:read("*a")
+	
+	handle:close()
+	
+	for process in string.gmatch(result, "[^\n]+") do
+		processes[(process:sub(65,#process))] = true
+	end
+	
+	return processes[executable_path] == true
 end
 
 local function copy_file(src, dest)
@@ -65,7 +92,7 @@ local applocation = roaming.."/"..parentfolder
 title(packagename.." updater")
 
 local function download_new_version_file()
-	os.execute([[curl -o "versioncheck.txt" -L "version_file_link"]])
+	exe([[curl -o "versioncheck.txt" -L "version_file_link"]])
 end
 
 local function checkVersion(no_cache)
@@ -111,7 +138,7 @@ local function checkVersion(no_cache)
 				noconnection = true
 			end
 			
-			os.execute([[timeout 1]])
+			exe([[timeout 1]])
 		end
 	end
 	
@@ -218,19 +245,19 @@ local function updateprogram(forceupdate, first_run)
 			print("Updating to version: "..nvtext)
 			
 			if UseGitHub == "y" then
-				os.execute([[curl -o "]]..packagename..[[.tmp" -L "]]..repolink..[[/releases/download/]]..nvtext..[[/]]..packagename..[["]])
+				exe([[curl -o "]]..packagename..[[.tmp" -L "]]..repolink..[[/releases/download/]]..nvtext..[[/]]..packagename..[["]])
 			else
-				os.execute([[curl -o "]]..packagename..[[.tmp" -L "]]..nonGitHubLink..[["]])
+				exe([[curl -o "]]..packagename..[[.tmp" -L "]]..nonGitHubLink..[["]])
 			end
 			
-			os.execute([[mkdir "]]..applocation..[["]])
+			execls2([[mkdir "]]..applocation..[["]])
 			
 			if taskkillcom ~= "" then
-				if taskkillcom == "y" then
-					os.execute([[taskkill /IM "]]..packagename..[["]])
-					os.execute([[taskkill /F /IM "]]..packagename..[["]])
+				if taskkillcom == "y" and is_executable_running(applocation..[[/]]..packagename) then
+					execls([[taskkill /IM "]]..packagename..[["]])
+					execls2([[taskkill /F /IM "]]..packagename..[["]])
 				else
-					os.execute(taskkillcom)
+					execls2(taskkillcom)
 				end
 			end
 			
@@ -239,6 +266,9 @@ local function updateprogram(forceupdate, first_run)
 				
 				return false, "remove", vtext
 			end
+			
+			cls()
+			print("Copying executable...")
 			
 			local copysucess = copy_file(packagename..[[.tmp]], applocation..[[/]]..packagename)
 			
