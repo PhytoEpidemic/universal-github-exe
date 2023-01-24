@@ -37,6 +37,7 @@ FILE3="README.md"
 FILE4="version.txt"
 FILE5="downloader.lua"
 FILE6="lua5.1.dll"
+FILE7="lfs.dll"
 [SourceFiles]
 SourceFiles0=L:\MyGitHub\universal-github-exe\
 [SourceFiles0]
@@ -47,3 +48,4 @@ SourceFiles0=L:\MyGitHub\universal-github-exe\
 %FILE4%=
 %FILE5%=
 %FILE6%=
+%FILE7%=

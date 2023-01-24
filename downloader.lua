@@ -1,3 +1,5 @@
+lfs = require("lfs")
+
 local function exe(com)
 	os.execute(com)
 end
@@ -36,18 +38,23 @@ local function slashback(st)
 	return st:gsub("/","\\")
 end
 
+local function delete_file(filepath)
+	if (lfs.attributes(filepath) ~= nil) then
+		return (os.remove(filepath))
+	else
+		return true
+	end
+end
+
 local function is_executable_running(executable_path)
-	local processes = {}
 	local handle = io.popen("ps -W")
 	local result = handle:read("*a")
-	
 	handle:close()
-	
+	local processes = {}
 	for process in string.gmatch(result, "[^\n]+") do
-		processes[(process:sub(65,#process))] = true
+		processes[(process:sub(65,#process):gsub("/","\\"))] = true
 	end
-	
-	return processes[executable_path] == true
+	return processes[(executable_path:gsub("/","\\"))] == true
 end
 
 local function copy_file(src, dest)
@@ -179,18 +186,13 @@ echo %OUT%
 	end
 	
 	tf:close()
-	os.remove([[askBox.bat]])
+	delete_file([[askBox.bat]])
 	
 	return answer
 end
 
 local function runprogram()
-	local check = io.popen([[""%AppData%\]]..parentfolder.."\\"..packagename..[["" 2>&1]])
-	local info = check:read("*all")
-	
-	check:close()
-	
-	return not (#info > 3)
+	return ((os.execute(applocation..[[/]]..packagename) == 0) or (lfs.attributes(applocation..[[/updating_app.txt]]) ~= nil))
 end
 
 local function updateVersionFile()
@@ -199,7 +201,7 @@ local function updateVersionFile()
 end
 
 local function regressVersionFile()
-	os.remove(applocation.."/version.txt")
+	delete_file(applocation.."/version.txt")
 	os.rename("version.txt",applocation.."/version.txt")
 end
 
@@ -237,7 +239,7 @@ local function updateprogram(forceupdate, first_run)
 				askbefore:write("Yes")
 				askbefore:close()
 			end
-			
+			io.open(applocation..[[/updating_app.txt]],"w"):close()
 			cls()
 			showwindow()
 			cls()
@@ -261,7 +263,7 @@ local function updateprogram(forceupdate, first_run)
 				end
 			end
 			
-			if (not os.remove(applocation..[[/]]..packagename)) and (not first_update_ever) then
+			if (not delete_file(applocation..[[/]]..packagename)) and (not first_update_ever) then
 				hidewindow()
 				
 				return false, "remove", vtext
@@ -273,7 +275,7 @@ local function updateprogram(forceupdate, first_run)
 			local copysucess = copy_file(packagename..[[.tmp]], applocation..[[/]]..packagename)
 			
 			hidewindow()
-			
+			delete_file(applocation..[[/updating_app.txt]])
 			if not copysucess then
 				return false, "copy", nvtext
 			else
@@ -291,10 +293,8 @@ local function updateloop(forceupdate)
 		
 		if update_sucess then
 			updateVersionFile()
-			
 			if not runprogram() then
 				regressVersionFile()
-				
 				if askBox(packagename.." updater",packagename.." was unable to open. Would you like to try updating again?","YesNo","Warning") == "Yes" then
 					forceupdate = true
 				else
@@ -325,9 +325,11 @@ local _, needsupdate = checkVersion()
 
 if needsupdate then
 	updateloop(alwaysforceupdate == "y")
-elseif not runprogram() then
-	if askBox(packagename.." updater","Program was unable to open properly. Would you like to try updating to repair it?","YesNo","Warning") == "Yes" then
-		updateloop(true)
+else
+	if not runprogram() then
+		if askBox(packagename.." updater","Program was unable to open properly. Would you like to try updating to repair it?","YesNo","Warning") == "Yes" then
+			updateloop(true)
+		end
 	end
 end
 
