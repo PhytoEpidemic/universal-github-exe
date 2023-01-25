@@ -94,7 +94,8 @@ local repolink = [[repository_link]]
 local packagename = [[package_name]]
 local taskkillcom = [[add_taskkill_command]]
 local alwaysforceupdate = [[always_force_update]]
-local applocation = roaming.."/"..parentfolder
+local applocation = (roaming..[[/]]..parentfolder):gsub("\\","/")
+local appdestination = applocation..[[/]]..packagename
 
 title(packagename.." updater")
 
@@ -103,7 +104,7 @@ local function download_new_version_file()
 end
 
 local function checkVersion(no_cache)
-	local thisversion = io.open(applocation.."/version.txt","r")
+	local thisversion = io.open(applocation..[[/version.txt]],"r")
 	local nvtext = ""
 	local vtext = ""
 	local needsupdate = false
@@ -118,7 +119,7 @@ local function checkVersion(no_cache)
 	local newversion = false
 	
 	if not no_cache then
-		newversion = io.open("versioncheck.txt","r")
+		newversion = io.open([[versioncheck.txt]],"r")
 	end
 	
 	local function read_new_version_file()
@@ -135,7 +136,7 @@ local function checkVersion(no_cache)
 		for download_attempt=1,5 do
 			download_new_version_file()
 			
-			newversion = io.open("versioncheck.txt","r")
+			newversion = io.open([[versioncheck.txt]],"r")
 			
 			if newversion then
 				read_new_version_file()
@@ -192,17 +193,17 @@ echo %OUT%
 end
 
 local function runprogram()
-	return ((os.execute(applocation..[[/]]..packagename) == 0) or (lfs.attributes(applocation..[[/updating_app.txt]]) ~= nil))
+	return ((os.execute(appdestination) == 0) or (lfs.attributes(applocation..[[/updating_app.tmp]]) ~= nil))
 end
 
 local function updateVersionFile()
-	os.rename(applocation.."/version.txt","version.txt")
-	os.rename("versioncheck.txt",applocation.."/version.txt")
+	os.rename(applocation..[[/version.txt]],[[version.txt]])
+	os.rename([[versioncheck.txt]],applocation..[[/version.txt]])
 end
 
 local function regressVersionFile()
-	delete_file(applocation.."/version.txt")
-	os.rename("version.txt",applocation.."/version.txt")
+	delete_file(applocation..[[/version.txt]])
+	os.rename([[version.txt]],applocation..[[/version.txt]])
 end
 
 local function updateprogram(forceupdate, first_run)
@@ -239,7 +240,10 @@ local function updateprogram(forceupdate, first_run)
 				askbefore:write("Yes")
 				askbefore:close()
 			end
-			io.open(applocation..[[/updating_app.txt]],"w"):close()
+			local update_indicator = io.open(applocation..[[/updating_app.tmp]],"w")
+			if update_indicator then
+				update_indicator:close()
+			end
 			cls()
 			showwindow()
 			cls()
@@ -252,10 +256,10 @@ local function updateprogram(forceupdate, first_run)
 				exe([[curl -o "]]..packagename..[[.tmp" -L "]]..nonGitHubLink..[["]])
 			end
 			
-			execls2([[mkdir "]]..applocation..[["]])
+			execls2([[mkdir "]]..slashback(applocation)..[["]])
 			
 			if taskkillcom ~= "" then
-				if taskkillcom == "y" and is_executable_running(applocation..[[/]]..packagename) then
+				if taskkillcom == "y" and is_executable_running(appdestination) then
 					execls([[taskkill /IM "]]..packagename..[["]])
 					execls2([[taskkill /F /IM "]]..packagename..[["]])
 				else
@@ -263,7 +267,7 @@ local function updateprogram(forceupdate, first_run)
 				end
 			end
 			
-			if (not delete_file(applocation..[[/]]..packagename)) and (not first_update_ever) then
+			if (not delete_file(appdestination)) and (not first_update_ever) then
 				hidewindow()
 				
 				return false, "remove", vtext
@@ -272,10 +276,10 @@ local function updateprogram(forceupdate, first_run)
 			cls()
 			print("Copying executable...")
 			
-			local copysucess = copy_file(packagename..[[.tmp]], applocation..[[/]]..packagename)
+			local copysucess = copy_file(packagename..[[.tmp]], appdestination)
 			
 			hidewindow()
-			delete_file(applocation..[[/updating_app.txt]])
+			delete_file(applocation..[[/updating_app.tmp]])
 			if not copysucess then
 				return false, "copy", nvtext
 			else
